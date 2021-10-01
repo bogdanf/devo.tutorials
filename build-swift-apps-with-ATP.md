@@ -122,6 +122,25 @@ The HTTP abstraction layer is implemented using ideas and code “borrowed” fr
 The actual REST request is made using Combine’s own dataTaskPublisher*, *encapsulated in Vadim’s Agent* *struct*.*
 
 <iframe src="https://medium.com/media/497e1238f054cdf05c93a94d949fccb4" frameborder=0></iframe>
+```
+// from https://www.vadimbulavin.com/modern-networking-in-swift-5-with-urlsession-combine-framework-and-codable/
+struct Agent {
+    struct Response<T> {
+        let value: T
+        let response: URLResponse
+    }
+    
+    func run<T: Decodable>(_ request: URLRequest, _ decoder: JSONDecoder = JSONDecoder()) -> AnyPublisher<Response<T>, Error> {
+        URLSession.shared
+            .dataTaskPublisher(for: request)
+            .tryMap { result -> Response<T> in
+                let value = try decoder.decode(T.self, from: result.data)
+                return Response(value: value, response: result.response)
+            }
+            .eraseToAnyPublisher()
+    }
+}
+```
 
 ### The model
 
